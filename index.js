@@ -63,8 +63,13 @@ async function run() {
       const {taskId} = req.params;
       const query = {_id:new ObjectId(taskId)}
 
-      const task = await tasksCollection.findOne(query);
-      res.send(task)
+      try {
+        const task = await tasksCollection.findOne(query);
+        res.send(task)
+      } catch (error) {
+        console.log("Error=======>", error)
+        res.status(500).json({error:true, message:"There was server side error"})
+      }
     })
 
     app.patch("/tasks/:taskId", async(req, res)=>{
@@ -81,6 +86,24 @@ async function run() {
         res.status(500).json({error:true, message:"There was server side error!"})
       }
     })
+
+
+    app.put("/tasks/:taskId", async(req, res)=>{
+      const {taskId} = req.params;
+      const filter = {_id:new ObjectId(taskId)}
+      const updateDoc = {
+        $set:req.body
+      }
+
+      try {
+      const result = await tasksCollection.updateOne(filter, updateDoc, {upsert:false})
+      res.status(200).send({message:"Update was successful", code:200})
+      } catch (error) {
+        res.status(500).json({error:true, message:"There was server side error!"})
+      }
+    })
+
+
 
     app.delete("/tasks/:taskId", async(req, res)=>{
       const {taskId} = req.params;
