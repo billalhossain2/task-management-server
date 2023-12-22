@@ -2,7 +2,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -57,6 +57,33 @@ async function run() {
 
       const tasks = await tasksCollection.find({email}).toArray();
       res.send(tasks)
+    })
+
+    app.patch("/tasks/:taskId", async(req, res)=>{
+      const {taskId} = req.params;
+      const filter = {_id:new ObjectId(taskId)}
+      const updateDoc = {
+        $set:{completed:req.body.completed}
+      }
+
+      try {
+      const result = await tasksCollection.updateOne(filter, updateDoc, {upsert:false})
+      res.status(200).send({message:"Update was successful", code:200})
+      } catch (error) {
+        res.status(500).json({error:true, message:"There was server side error!"})
+      }
+    })
+
+    app.delete("/tasks/:taskId", async(req, res)=>{
+      const {taskId} = req.params;
+      const query = {_id:new ObjectId(taskId)}
+
+      try {
+        const result = await tasksCollection.deleteOne(query);
+        res.status(200).json({success:true, message:"Successfully deleted the task"});
+      } catch (error) {
+        res.status(500).json({error:true, message:"There was server side error!"})
+      }
     })
 
 
