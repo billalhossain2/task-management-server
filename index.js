@@ -59,6 +59,14 @@ async function run() {
       res.send(tasks)
     })
 
+    app.get("/tasks/:taskId", async(req, res)=>{
+      const {taskId} = req.params;
+      const query = {_id:new ObjectId(taskId)}
+
+      const task = await tasksCollection.findOne(query);
+      res.send(task)
+    })
+
     app.patch("/tasks/:taskId", async(req, res)=>{
       const {taskId} = req.params;
       const filter = {_id:new ObjectId(taskId)}
